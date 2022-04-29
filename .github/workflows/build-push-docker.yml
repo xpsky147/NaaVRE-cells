@@ -2,7 +2,6 @@ name: Build containers on workflow_dispatch
 
 on:
   workflow_dispatch:
-    branches: [ main ]
     inputs:
       build_dir:
         description : 'Build Directory'

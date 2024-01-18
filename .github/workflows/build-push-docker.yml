@@ -1,4 +1,4 @@
-name: Build containers on workflow_dispatch
+name: Build Cell 
 
 on:
   workflow_dispatch:
@@ -42,6 +42,9 @@ jobs:
     runs-on: ${{ needs.choose-runner.outputs.runner }}
     name: ${{github.event.inputs.id}}
     steps:
+    - id: commit
+      uses: prompt/actions-commit-hash@v3
+              
     - uses: actions/checkout@v4
 
     - name: Login to GitHub Registry
@@ -61,13 +64,15 @@ jobs:
         echo "Image Repository: ${{ github.event.inputs.image_repo }}"
         echo "Image Tag: ${{ github.event.inputs.image_tag }}"
         echo "Run Identifier: ${{ github.event.inputs.id }}"
+        echo "hash: ${{ steps.commit.outputs.short }}"
+        echo "hash: ${{github.sha}}"
 
     - name: Build docker
       uses: docker/build-push-action@v5
       with:
         context: ${{ github.event.inputs.build_dir }}
         file: ${{ github.event.inputs.build_dir }}/${{ github.event.inputs.dockerfile }}
-        tags: ${{ github.event.inputs.image_repo }}/${{ github.event.inputs.image_tag }}
+        tags: ${{ github.event.inputs.image_repo }}/${{ github.event.inputs.image_tag }}:${{ steps.commit.outputs.short }},${{ github.event.inputs.image_repo }}/${{ github.event.inputs.image_tag }}:latest
         cache-from: type=gha
         cache-to: type=gha,mode=min
         push: true
